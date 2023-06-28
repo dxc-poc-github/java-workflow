@@ -34,11 +34,8 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
         with:
-          files: |
-            test-results/**/*.xml
-            test-results/**/*.trx
-            test-results/**/*.json
-            surefire-reports/*.xml            
+          files:
+            target/surefire-reports/*.xml            
 
   deploy:
     runs-on: ubuntu-latest
