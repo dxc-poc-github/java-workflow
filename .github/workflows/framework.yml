@@ -12,7 +12,9 @@ jobs:
           distribution: 'temurin'
           cache: maven
       - name: Maven Build
-        run: mvn --batch-mode --update-snapshots package
+        run: mvn --batch-mode --update-snapshots install
+      - name: 'Dependency Review'
+        uses: actions/dependency-review-action@v3        
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v2
         with:
