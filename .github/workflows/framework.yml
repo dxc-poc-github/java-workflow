@@ -1,7 +1,6 @@
 name: Java Maven Workflow
 on: 
   workflow_call:
-  workflow_dispatch:
     inputs:
       java_version:
         description: Java Version
