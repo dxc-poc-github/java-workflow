@@ -1,5 +1,10 @@
 name: Java Maven Workflow
 on: workflow_call
+  inputs:
+    javaVersion:
+      description: Java Version
+      required: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
