@@ -7,6 +7,18 @@ on:
         description: Java Version
         required: true
         default: '11'
+      perform_unit_test:
+        type: boolean 
+        description: Junit Test
+        default: True
+      perform_integration_test:
+        type: boolean 
+        description: Integration Test
+        default: False  
+      perform_deploy:
+        type: boolean 
+        description: Deploy
+        default: False        
 
 jobs:
   build:
@@ -33,6 +45,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     needs: build
+    if: ${{ inputs.perform_unit_test }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 11
@@ -51,6 +64,7 @@ jobs:
   integration-test:
     runs-on: ubuntu-latest
     needs: build
+    if: ${{ inputs.perform_integration_test }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 11
@@ -72,10 +86,7 @@ jobs:
     needs:
       - build
       - test
-    environment:
-      name: 'Production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-    
+    if: ${{ inputs.perform_deploy }}    
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v2
