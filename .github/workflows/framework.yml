@@ -1,9 +1,11 @@
 name: Java Maven Workflow
-on: workflow_call
-  inputs:
-    javaVersion:
-      description: Java Version
-      required: true
+on: 
+  workflow_call:
+  workflow_dispatch:
+    inputs:
+      javaVersion:
+        description: Java Version
+        required: true
 
 jobs:
   build:
