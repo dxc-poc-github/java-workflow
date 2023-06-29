@@ -3,6 +3,7 @@ on:
   workflow_call:
     inputs:
       java_version:
+        type: string 
         description: Java Version
         required: true
         default: '11'
