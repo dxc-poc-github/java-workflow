@@ -21,7 +21,7 @@ on:
         default: False        
 
 jobs:
-  build:
+  mvn-build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -44,7 +44,7 @@ jobs:
           path: '${{ github.workspace }}/target/*.jar'                
   test:
     runs-on: ubuntu-latest
-    needs: build
+    needs: mvn-build
     if: ${{ inputs.perform_unit_test }}
     steps:
       - uses: actions/checkout@v3
@@ -63,7 +63,7 @@ jobs:
             target/surefire-reports/*.xml   
   integration-test:
     runs-on: ubuntu-latest
-    needs: build
+    needs: mvn-build
     if: ${{ inputs.perform_integration_test }}
     steps:
       - uses: actions/checkout@v3
@@ -84,7 +84,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs:
-      - build
+      - mvn-build
       - test
     if: ${{ inputs.perform_deploy }}    
     steps:
@@ -92,7 +92,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: java-app
-      - name: Print goodbye
+      - name: deploy
         run: echo "Done - bye!"
 #      - name: Deploy to Azure Web App
 #        id: deploy-to-webapp
