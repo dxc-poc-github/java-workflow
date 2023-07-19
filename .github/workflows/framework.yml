@@ -88,7 +88,7 @@ jobs:
           distribution: 'temurin'
           cache: maven
       - name: Download Settings XML
-        if: ${{ inputs.ARTIFACTORY_SETTINGS_XML_URL }} && ${{ inputs.ARTIFACTORY_USERNAME }} && ${{ secrets.ARTIFACTORY_PASSWORD }}
+        if: ${{ inputs.ARTIFACTORY_SETTINGS_XML_URL }} && ${{ inputs.ARTIFACTORY_USERNAME }}
         run: |
           echo "Download started.."
           if [[ -f $ {{ github.repository }}/settings.xml ]]
