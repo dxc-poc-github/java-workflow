@@ -39,7 +39,7 @@ on:
         default: '' 
       ARTIFACTORY_PUBLISHER_USERNAME:
         type: string 
-        description: ARTIFACTORY Settings XML Url
+        description: ARTIFACTORY Publisher Name
         required: false
         default: ''         
       ACR_REGISTRY_NAME:
@@ -102,7 +102,7 @@ jobs:
           echo "download completed"
       - name: Maven Build
         if: always()
-        run: mvn --batch-mode --update-snapshots install
+        run: mvn --batch-mode --update-snapshots -f ${{ inputs.MAVEN_POM_FILE }} ${{ inputs.MAVEN_OPTS }} ${{ inputs.MAVEN_GOALS }}
       - name: 'Dependency Review'
         if: ${{ inputs.advanceSecurityEnabled }}
         uses: actions/dependency-review-action@v3
