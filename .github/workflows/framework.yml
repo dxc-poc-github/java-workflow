@@ -87,6 +87,18 @@ jobs:
           java-version: '${{ inputs.JAVA_VERSION }}'
           distribution: 'temurin'
           cache: maven
+      - name: Download Settings XML
+        if: ${{ inputs.ARTIFACTORY_SETTINGS_XML_URL }} && ${{ inputs.ARTIFACTORY_USERNAME }} && ${{ secrets.ARTIFACTORY_PASSWORD }
+        run: |
+          echo "Download started.."
+          if [[ -f $ {{ github.repository }}/settings.xml ]]
+          then 
+            echo "settings.xml already exists"
+          else
+            echo "downloading settings.xml from Artifactory"
+            curl -u ${{ input.ARTIFACTORY_USERNAME }}:${{ secrets.ARTIFACTORY_PASSWORD }} -o $ {{ github.repository }}/settings.xml ${{ input.ARTIFACTORY_SETTINGS_XML_URL }}
+          fi
+          echo "download completed"
       - name: Maven Build
         run: mvn --batch-mode --update-snapshots install
       - name: 'Dependency Review'
