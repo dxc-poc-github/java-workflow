@@ -101,6 +101,7 @@ jobs:
           fi
           echo "download completed"
       - name: Maven Build
+        if: always()
         run: mvn --batch-mode --update-snapshots install
       - name: 'Dependency Review'
         if: ${{ inputs.advanceSecurityEnabled }}
