@@ -91,12 +91,13 @@ jobs:
         if: ${{ inputs.ARTIFACTORY_SETTINGS_XML_URL }} && ${{ inputs.ARTIFACTORY_USERNAME }}
         run: |
           echo "Download started.."
-          if [[ -f $ {{ github.repository }}/settings.xml ]]
+          if [[ -f ${{ github.repository }}/settings.xml ]]
           then 
             echo "settings.xml already exists"
           else
             echo "downloading settings.xml from Artifactory"
-            curl -u ${{ inputs.ARTIFACTORY_USERNAME }}:${{ secrets.ARTIFACTORY_PASSWORD }} -o $ {{ github.repository }}/settings.xml ${{ inputs.ARTIFACTORY_SETTINGS_XML_URL }}
+            echo "downloading settings.xml from Artifactory"
+            curl -u ${{ inputs.ARTIFACTORY_USERNAME }}:${{ secrets.ARTIFACTORY_PASSWORD }} -o ${{ github.repository }}/settings.xml ${{ inputs.ARTIFACTORY_SETTINGS_XML_URL }}
           fi
           echo "download completed"
       - name: Maven Build
