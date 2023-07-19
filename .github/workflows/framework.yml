@@ -1,15 +1,35 @@
-name: Java Maven Workflow
+name: Java AKS Maven Workflow
 on: 
   workflow_call:
     inputs:
-      java_version:
+      JAVA_VERSION:
         type: string 
         description: Java Version
         required: true
         default: '11'
+      APP_NAME:
+        type: string 
+        description: APP_NAME
+        required: false
+        default: ''        
+      MAVEN_OPTS:
+        type: string 
+        description: MAVEN_OPTS
+        required: false
+        default: ''
+      MAVEN_GOALS:
+        type: string 
+        description: Maven Goals
+        required: false
+        default: ''
+      MAVEN_POM_FILE:
+        type: string 
+        description: Maven POM File
+        required: false
+        default: ''        
       ACR_REGISTRY_NAME:
         required: false
-        type: string        
+        type: string         
       perform_unit_test:
         type: boolean 
         description: Junit Test
@@ -21,29 +41,37 @@ on:
       perform_deploy:
         type: boolean 
         description: Deploy
-        default: False
+        default: False 
+      perform_docker_build:
+        type: boolean 
+        description: Deploy
+        default: False         
+      advanceSecurityEnabled:
+        type: boolean 
+        description: GitHub Advanced Security
+        default: False        
     secrets:
       token:
         required: false 
       docker_username:
         required: false
       docker_password:
-        required: false        
-
+        required: false
 jobs:
   mvn-build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Set up JDK ${{ inputs.java_version }}
+      - name: Set up JDK ${{ inputs.JAVA_VERSION }}
         uses: actions/setup-java@v3
         with:
-          java-version: '${{ inputs.java_version }}'
+          java-version: '${{ inputs.JAVA_VERSION }}'
           distribution: 'temurin'
           cache: maven
       - name: Maven Build
         run: mvn --batch-mode --update-snapshots install
       - name: 'Dependency Review'
+        if: ${{ inputs.advanceSecurityEnabled }}
         uses: actions/dependency-review-action@v3
         with:
           fail-on-severity: moderate        
@@ -58,10 +86,10 @@ jobs:
     if: ${{ inputs.perform_unit_test }}
     steps:
       - uses: actions/checkout@v3
-      - name: Set up JDK 11
+      - name: Set up JDK ${{ inputs.JAVA_VERSION }}
         uses: actions/setup-java@v3
         with:
-          java-version: '11'
+          java-version: '${{ inputs.JAVA_VERSION }}'
           distribution: 'temurin'
       - name: Junit Test
         run: mvn --batch-mode --update-snapshots test
@@ -70,30 +98,32 @@ jobs:
         if: always()
         with:
           files:
-            target/surefire-reports/*.xml   
+            target/surefire-reports/*.xml
+          check_name: 'Test Results'
   integration-test:
     runs-on: ubuntu-latest
     needs: mvn-build
     if: ${{ inputs.perform_integration_test }}
     steps:
       - uses: actions/checkout@v3
-      - name: Set up JDK 11
+      - name: Set up JDK ${{ inputs.JAVA_VERSION }}
         uses: actions/setup-java@v3
         with:
-          java-version: '11'
+          java-version: '${{ inputs.JAVA_VERSION }}'
           distribution: 'temurin'
       - name: Junit Integration Test
         run: mvn --batch-mode --update-snapshots verify
-      - name: Publish Test Results
+      - name: Publish Integration Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
         with:
           files:
             target/surefire-reports/*.xml            
-
+          check_name: 'Integration Test Results'
   codeql-dependabot-report:
     runs-on: ubuntu-latest
-    needs: build
+    needs: mvn-build
+    if: ${{ inputs.advanceSecurityEnabled }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -122,8 +152,8 @@ jobs:
       REGISTRY_NAME: '${{ inputs.ACR_REGISTRY_NAME }}'
     runs-on: ubuntu-latest
     needs:
-      - build
-      - test 
+      - mvn-build
+    if: ${{ inputs.perform_docker_build }}  
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
@@ -159,4 +189,4 @@ jobs:
 #          app-name: 'sampleapp-githubactions'
 #          slot-name: 'Production'
 #          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-#          package: '/home/runner/work/java_app/java_app'          
+#          package: '/home/runner/work/java_app/java_app'
