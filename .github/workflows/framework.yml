@@ -103,6 +103,15 @@ jobs:
       - name: Maven Build
         if: always()
         run: mvn --batch-mode --update-snapshots -f ${{ inputs.MAVEN_POM_FILE }} ${{ inputs.MAVEN_OPTS }} ${{ inputs.MAVEN_GOALS }}
+      - name: Junit Test
+        run: mvn --batch-mode --update-snapshots -f ${{ inputs.MAVEN_POM_FILE }} ${{ inputs.MAVEN_OPTS }} test
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files:
+            target/surefire-reports/*.xml
+          check_name: 'Test Results'        
       - name: 'Dependency Review'
         if: ${{ inputs.advanceSecurityEnabled }}
         uses: actions/dependency-review-action@v3
@@ -113,15 +122,6 @@ jobs:
         with:
           name: java-app
           path: '${{ github.workspace }}/target/*.jar' 
-      - name: Junit Test
-        run: mvn --batch-mode --update-snapshots -f ${{ inputs.MAVEN_POM_FILE }} ${{ inputs.MAVEN_OPTS }} test
-      - name: Publish Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always()
-        with:
-          files:
-            target/surefire-reports/*.xml
-          check_name: 'Test Results'
       - name: Initialize CodeQL
         if: ${{ inputs.advanceSecurityEnabled }}
         uses: github/codeql-action/init@v2
