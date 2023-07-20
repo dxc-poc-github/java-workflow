@@ -123,13 +123,13 @@ jobs:
             target/surefire-reports/*.xml
           check_name: 'Test Results'
       - name: Initialize CodeQL
-	if: ${{ inputs.advanceSecurityEnabled }}
+        if: ${{ inputs.advanceSecurityEnabled }}
         uses: github/codeql-action/init@v2
       - name: Autobuild
-	if: ${{ inputs.advanceSecurityEnabled }}
+        if: ${{ inputs.advanceSecurityEnabled }}
         uses: github/codeql-action/autobuild@v2
       - name: Perform CodeQL Analysis
-	if: ${{ inputs.advanceSecurityEnabled }}
+        if: ${{ inputs.advanceSecurityEnabled }}
         uses: github/codeql-action/analyze@v2
       - name: Generate Security Report
         if: ${{ inputs.advanceSecurityEnabled }}
@@ -140,7 +140,7 @@ jobs:
           outputDir: ${{ github.workspace }}
           repository: ${{ github.repository }}
       - name: Upload Security Report
-	if: ${{ inputs.advanceSecurityEnabled }}
+        if: ${{ inputs.advanceSecurityEnabled }}
         uses: actions/upload-artifact@v2
         with:
           name: security-report
