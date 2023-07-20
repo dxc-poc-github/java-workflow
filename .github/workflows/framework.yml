@@ -77,7 +77,7 @@ on:
       ARTIFACTORY_PUBLISHER_PASSWORD:
         required: false
 jobs:
-  mvn-build:
+  build and publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -108,24 +108,13 @@ jobs:
         uses: actions/dependency-review-action@v3
         with:
           fail-on-severity: moderate        
-      - name: Upload artifact for deployment job
+      - name: Upload artifact 
         uses: actions/upload-artifact@v2
         with:
           name: java-app
-          path: '${{ github.workspace }}/target/*.jar'                
-  test:
-    runs-on: ubuntu-latest
-    needs: mvn-build
-    if: ${{ inputs.perform_unit_test }}
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up JDK ${{ inputs.JAVA_VERSION }}
-        uses: actions/setup-java@v3
-        with:
-          java-version: '${{ inputs.JAVA_VERSION }}'
-          distribution: 'temurin'
+          path: '${{ github.workspace }}/target/*.jar' 
       - name: Junit Test
-        run: mvn --batch-mode --update-snapshots test
+        run: mvn --batch-mode --update-snapshots -f ${{ inputs.MAVEN_POM_FILE }} ${{ inputs.MAVEN_OPTS }} clean test
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
@@ -133,41 +122,17 @@ jobs:
           files:
             target/surefire-reports/*.xml
           check_name: 'Test Results'
-  integration-test:
-    runs-on: ubuntu-latest
-    needs: mvn-build
-    if: ${{ inputs.perform_integration_test }}
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up JDK ${{ inputs.JAVA_VERSION }}
-        uses: actions/setup-java@v3
-        with:
-          java-version: '${{ inputs.JAVA_VERSION }}'
-          distribution: 'temurin'
-      - name: Junit Integration Test
-        run: mvn --batch-mode --update-snapshots verify
-      - name: Publish Integration Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always()
-        with:
-          files:
-            target/surefire-reports/*.xml            
-          check_name: 'Integration Test Results'
-  codeql-dependabot-report:
-    runs-on: ubuntu-latest
-    needs: mvn-build
-    if: ${{ inputs.advanceSecurityEnabled }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
       - name: Initialize CodeQL
+	      if: ${{ inputs.advanceSecurityEnabled }}
         uses: github/codeql-action/init@v2
       - name: Autobuild
+	      if: ${{ inputs.advanceSecurityEnabled }}
         uses: github/codeql-action/autobuild@v2
       - name: Perform CodeQL Analysis
+	      if: ${{ inputs.advanceSecurityEnabled }}
         uses: github/codeql-action/analyze@v2
       - name: Generate Security Report
-        #uses: peter-murray/github-security-report-action@v2
+		    if: ${{ inputs.advanceSecurityEnabled }}
         uses: rsdmike/github-security-report-action@v3.0.4
         with:
           token: ${{ secrets.CODEQL_TOKEN }}  
@@ -175,51 +140,8 @@ jobs:
           outputDir: ${{ github.workspace }}
           repository: ${{ github.repository }}
       - name: Upload Security Report
+	      if: ${{ inputs.advanceSecurityEnabled }}
         uses: actions/upload-artifact@v2
         with:
           name: security-report
           path: '${{ github.workspace }}/*.pdf'
-  docker-image-build-push:
-    # Environment variables available to all jobs and steps in this workflow
-    env:
-      REGISTRY_NAME: '${{ inputs.ACR_REGISTRY_NAME }}'
-    runs-on: ubuntu-latest
-    needs:
-      - mvn-build
-    if: ${{ inputs.perform_docker_build }}  
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-    - name: Docker Login (Connect to Azure Container registry (ACR))
-      uses: azure/docker-login@v1
-      with:
-        login-server: ${{ env.REGISTRY_NAME }}.azurecr.io
-        username: ${{ secrets.DOCKER_USERNAME }} 
-        #username: ${{ secrets.REGISTRY_USERNAME }} 
-        password: ${{ secrets.DOCKER_PASSWORD }}
-       #password: ${{ secrets.REGISTRY_PASSWORD }}
-    - name: Container build and push to a Azure Container registry (ACR)
-      run: |
-        docker build . -t ${{ env.REGISTRY_NAME }}.azurecr.io/myimage:${{ github.sha }}
-        docker push ${{ env.REGISTRY_NAME }}.azurecr.io/myimage:${{ github.sha }}          
-  deploy:
-    runs-on: ubuntu-latest
-    needs:
-      - mvn-build
-      - test
-    if: ${{ inputs.perform_deploy }}    
-    steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v2
-        with:
-          name: java-app
-      - name: deploy
-        run: echo "Done - bye!"
-#      - name: Deploy to Azure Web App
-#        id: deploy-to-webapp
-#        uses: azure/webapps-deploy@v2
-#        with:
-#          app-name: 'sampleapp-githubactions'
-#          slot-name: 'Production'
-#          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-#          package: '/home/runner/work/java_app/java_app'
