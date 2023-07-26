@@ -47,23 +47,13 @@ on:
         type: string
       DOCKER_PROD_REGISTRY_NAME:
         required: false
-        type: string  
-      perform_unit_test:
-        type: boolean 
-        description: Junit Test
-        default: True
-      perform_integration_test:
-        type: boolean 
-        description: Integration Test
-        default: False  
-      perform_deploy:
-        type: boolean 
-        description: Deploy
-        default: False 
-      perform_docker_build:
-        type: boolean 
-        description: Deploy
-        default: False         
+        type: string
+      DOCKER_FILE_NAME:
+        required: false
+        type: string 
+      DOCKER_FILE_DIR:
+        required: false
+        type: string            
       advanceSecurityEnabled:
         type: boolean 
         description: GitHub Advanced Security
@@ -124,12 +114,6 @@ jobs:
         uses: actions/dependency-review-action@v3
         with:
           fail-on-severity: moderate        
-      - name: Upload artifact
-        if: always()
-        uses: actions/upload-artifact@v2
-        with:
-          name: java-app
-          path: '${{ github.workspace }}/target/*.jar' 
       - name: Initialize CodeQL
         if: ${{ inputs.advanceSecurityEnabled }}
         uses: github/codeql-action/init@v2
@@ -153,3 +137,33 @@ jobs:
         with:
           name: security-report
           path: '${{ github.workspace }}/*.pdf'
+      - name: NonProd- Docker Login (Connect to Azure Container registry (ACR))
+        if: ${{ inputs.DOCKER_NONPROD_REGISTRY_NAME }}
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ inputs.DOCKER_NONPROD_REGISTRY_NAME }}.azurecr.io
+          username: ${{ secrets.DOCKER_USERNAME }} 
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: NonProd-Container build and push to a Azure Container registry (ACR)
+        if: ${{ inputs.DOCKER_NONPROD_REGISTRY_NAME }}
+        run: |
+          docker build . -t ${{ inputs.DOCKER_NONPROD_REGISTRY_NAME }}.azurecr.io/${{ inputs.APP_NAME }}:${{ steps.version.outputs.buildVersion }}
+          docker push ${{ inputs.DOCKER_NONPROD_REGISTRY_NAME }}.azurecr.io/${{ inputs.APP_NAME }}:${{ steps.version.outputs.buildVersion }}
+      - name: Prod-Docker Login (Connect to Azure Container registry (ACR))
+        if: ${{ inputs.DOCKER_PROD_REGISTRY_NAME }}
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ inputs.DOCKER_PROD_REGISTRY_NAME }}.azurecr.io
+          username: ${{ secrets.DOCKER_USERNAME }} 
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Prod-Container build and push to a Azure Container registry (ACR)
+        if: ${{ inputs.DOCKER_PROD_REGISTRY_NAME }}
+        run: |
+          docker build . -t ${{ inputs.DOCKER_PROD_REGISTRY_NAME }}.azurecr.io/${{ inputs.APP_NAME }}:${{ steps.version.outputs.buildVersion }}
+          docker push ${{ inputs.DOCKER_PROD_REGISTRY_NAME }}.azurecr.io/${{ inputs.APP_NAME }}:${{ steps.version.outputs.buildVersion }} 
+      - name: Upload artifact
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: java-app
+          path: '${{ github.workspace }}/target/*.jar' 
