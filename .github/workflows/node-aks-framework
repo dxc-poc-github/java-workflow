@@ -53,10 +53,7 @@ jobs:
         run: npm install
       - name: NPM Build
         if:  ${{ inputs.NPM_COMMAND }}
-        run: ${{ inputs.NPM_COMMAND }} 
-      - name: Build Version
-        id: version
-        run: echo "::set-output name=buildVersion::$(date +'%Y%m%d'.$GITHUB_RUN_NUMBER)"            
+        run: ${{ inputs.NPM_COMMAND }}        
       - name: 'Dependency Review'
         if: ${{ inputs.advanceSecurityEnabled }}
         uses: actions/dependency-review-action@v3
@@ -95,8 +92,8 @@ jobs:
       - name: NonProd-Container build and push to a Azure Container registry (ACR)
         if: ${{ inputs.DOCKER_NONPROD_REGISTRY_NAME }}
         run: |
-          docker build . -t ${{ inputs.DOCKER_NONPROD_REGISTRY_NAME }}.azurecr.io/${{ inputs.APP_NAME }}:${{ steps.version.outputs.buildVersion }}
-          docker push ${{ inputs.DOCKER_NONPROD_REGISTRY_NAME }}.azurecr.io/${{ inputs.APP_NAME }}:${{ steps.version.outputs.buildVersion }}
+          docker build . -t ${{ inputs.DOCKER_NONPROD_REGISTRY_NAME }}.azurecr.io/${{ inputs.APP_NAME }}:$GITHUB_RUN_ID
+          docker push ${{ inputs.DOCKER_NONPROD_REGISTRY_NAME }}.azurecr.io/${{ inputs.APP_NAME }}:$GITHUB_RUN_ID
       - name: Prod-Docker Login (Connect to Azure Container registry (ACR))
         if: ${{ inputs.DOCKER_PROD_REGISTRY_NAME }}
         uses: azure/docker-login@v1
@@ -107,8 +104,8 @@ jobs:
       - name: Prod-Container build and push to a Azure Container registry (ACR)
         if: ${{ inputs.DOCKER_PROD_REGISTRY_NAME }}
         run: |
-          docker build . -t ${{ inputs.DOCKER_PROD_REGISTRY_NAME }}.azurecr.io/${{ inputs.APP_NAME }}:${{ steps.version.outputs.buildVersion }}
-          docker push ${{ inputs.DOCKER_PROD_REGISTRY_NAME }}.azurecr.io/${{ inputs.APP_NAME }}:${{ steps.version.outputs.buildVersion }} 
+          docker build . -t ${{ inputs.DOCKER_PROD_REGISTRY_NAME }}.azurecr.io/${{ inputs.APP_NAME }}:$GITHUB_RUN_ID
+          docker push ${{ inputs.DOCKER_PROD_REGISTRY_NAME }}.azurecr.io/${{ inputs.APP_NAME }}:$GITHUB_RUN_ID 
       - name: Upload artifact
         if: always()
         uses: actions/upload-artifact@v2
