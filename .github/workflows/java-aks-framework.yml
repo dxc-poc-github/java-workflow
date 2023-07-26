@@ -92,10 +92,7 @@ jobs:
             echo "downloading settings.xml from Artifactory"
             curl -u ${{ inputs.MAVEN_ARTIFACTORY_USERNAME }}:${{ secrets.MAVEN_ARTIFACTORY_PASSWORD }} -o ${{ github.repository }}/settings.xml ${{ inputs.MAVEN_ARTIFACTORY_SETTINGS_XML_URL }}
           fi
-          echo "download completed"
-      - name: Build Version
-        id: version
-        run: echo "::set-output name=buildVersion::$(date +'%Y%m%d'.$GITHUB_RUN_NUMBER)"          
+          echo "download completed"     
       - name: Maven Build
         if: always()
         run: mvn --batch-mode --update-snapshots -f ${{ inputs.MAVEN_POM_FILE }} ${{ inputs.MAVEN_OPTS }} ${{ inputs.MAVEN_GOALS }}
@@ -147,8 +144,8 @@ jobs:
       - name: NonProd-Container build and push to a Azure Container registry (ACR)
         if: ${{ inputs.DOCKER_NONPROD_REGISTRY_NAME }}
         run: |
-          docker build . -t ${{ inputs.DOCKER_NONPROD_REGISTRY_NAME }}.azurecr.io/${{ inputs.APP_NAME }}:${{ steps.version.outputs.buildVersion }}
-          docker push ${{ inputs.DOCKER_NONPROD_REGISTRY_NAME }}.azurecr.io/${{ inputs.APP_NAME }}:${{ steps.version.outputs.buildVersion }}
+          docker build . -t ${{ inputs.DOCKER_NONPROD_REGISTRY_NAME }}.azurecr.io/${{ inputs.APP_NAME }}:$GITHUB_RUN_ID
+          docker push ${{ inputs.DOCKER_NONPROD_REGISTRY_NAME }}.azurecr.io/${{ inputs.APP_NAME }}:$GITHUB_RUN_ID
       - name: Prod-Docker Login (Connect to Azure Container registry (ACR))
         if: ${{ inputs.DOCKER_PROD_REGISTRY_NAME }}
         uses: azure/docker-login@v1
@@ -159,8 +156,8 @@ jobs:
       - name: Prod-Container build and push to a Azure Container registry (ACR)
         if: ${{ inputs.DOCKER_PROD_REGISTRY_NAME }}
         run: |
-          docker build . -t ${{ inputs.DOCKER_PROD_REGISTRY_NAME }}.azurecr.io/${{ inputs.APP_NAME }}:${{ steps.version.outputs.buildVersion }}
-          docker push ${{ inputs.DOCKER_PROD_REGISTRY_NAME }}.azurecr.io/${{ inputs.APP_NAME }}:${{ steps.version.outputs.buildVersion }} 
+          docker build . -t ${{ inputs.DOCKER_PROD_REGISTRY_NAME }}.azurecr.io/${{ inputs.APP_NAME }}:$GITHUB_RUN_ID
+          docker push ${{ inputs.DOCKER_PROD_REGISTRY_NAME }}.azurecr.io/${{ inputs.APP_NAME }}:$GITHUB_RUN_ID 
       - name: Upload artifact
         if: always()
         uses: actions/upload-artifact@v2
