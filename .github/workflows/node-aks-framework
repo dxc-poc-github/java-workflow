@@ -40,6 +40,10 @@ on:
         required: false
       DOCKER_PASSWORD:
         required: false
+      DOCKER_NONPROD_REGISTRY_NAME:
+        required: false
+      DOCKER_PROD_REGISTRY_NAME:
+        required: false
 jobs:
   ci_phase:
     runs-on: ubuntu-latest
@@ -83,29 +87,29 @@ jobs:
           name: security-report
           path: '${{ github.workspace }}/*.pdf'
       - name: NonProd- Docker Login (Connect to Azure Container registry (ACR))
-        if: ${{ inputs.DOCKER_NONPROD_REGISTRY_NAME }}
+        if: ${{ secrets.DOCKER_NONPROD_REGISTRY_NAME }}
         uses: azure/docker-login@v1
         with:
-          login-server: ${{ inputs.DOCKER_NONPROD_REGISTRY_NAME }}.azurecr.io
+          login-server: ${{ secrets.DOCKER_NONPROD_REGISTRY_NAME }}.azurecr.io
           username: ${{ secrets.DOCKER_USERNAME }} 
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: NonProd-Container build and push to a Azure Container registry (ACR)
-        if: ${{ inputs.DOCKER_NONPROD_REGISTRY_NAME }}
+        if: ${{ secrets.DOCKER_NONPROD_REGISTRY_NAME }}
         run: |
-          docker build . -t ${{ inputs.DOCKER_NONPROD_REGISTRY_NAME }}.azurecr.io/${{ inputs.APP_NAME }}:$GITHUB_RUN_ID
-          docker push ${{ inputs.DOCKER_NONPROD_REGISTRY_NAME }}.azurecr.io/${{ inputs.APP_NAME }}:$GITHUB_RUN_ID
+          docker build . -t ${{ secrets.DOCKER_NONPROD_REGISTRY_NAME }}.azurecr.io/${{ inputs.APP_NAME }}:$GITHUB_RUN_ID
+          docker push ${{ secrets.DOCKER_NONPROD_REGISTRY_NAME }}.azurecr.io/${{ inputs.APP_NAME }}:$GITHUB_RUN_ID
       - name: Prod-Docker Login (Connect to Azure Container registry (ACR))
-        if: ${{ inputs.DOCKER_PROD_REGISTRY_NAME }}
+        if: ${{ secrets.DOCKER_PROD_REGISTRY_NAME }}
         uses: azure/docker-login@v1
         with:
-          login-server: ${{ inputs.DOCKER_PROD_REGISTRY_NAME }}.azurecr.io
+          login-server: ${{ secrets.DOCKER_PROD_REGISTRY_NAME }}.azurecr.io
           username: ${{ secrets.DOCKER_USERNAME }} 
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: Prod-Container build and push to a Azure Container registry (ACR)
-        if: ${{ inputs.DOCKER_PROD_REGISTRY_NAME }}
+        if: ${{ secrets.DOCKER_PROD_REGISTRY_NAME }}
         run: |
-          docker build . -t ${{ inputs.DOCKER_PROD_REGISTRY_NAME }}.azurecr.io/${{ inputs.APP_NAME }}:$GITHUB_RUN_ID
-          docker push ${{ inputs.DOCKER_PROD_REGISTRY_NAME }}.azurecr.io/${{ inputs.APP_NAME }}:$GITHUB_RUN_ID 
+          docker build . -t ${{ secrets.DOCKER_PROD_REGISTRY_NAME }}.azurecr.io/${{ inputs.APP_NAME }}:$GITHUB_RUN_ID
+          docker push ${{ secrets.DOCKER_PROD_REGISTRY_NAME }}.azurecr.io/${{ inputs.APP_NAME }}:$GITHUB_RUN_ID 
       - name: Upload artifact
         if: always()
         uses: actions/upload-artifact@v2
