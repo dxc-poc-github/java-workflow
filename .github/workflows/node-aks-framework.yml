@@ -62,4 +62,4 @@ jobs:
         run: npm install ${{ inputs.NPM_JSON_LOCATION }}
 #      - name: NPM Build
 #        if:  ${{ inputs.NPM_COMMAND }}
-        run: ${{ inputs.NPM_COMMAND }}        
+#        run: ${{ inputs.NPM_COMMAND }}        
