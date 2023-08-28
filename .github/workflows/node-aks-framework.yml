@@ -16,7 +16,7 @@ on:
         type: string 
         description: NPM Command to execute
         required: false
-        default: 'npm start '
+        default: 'npm run build '
       APP_NAME:
         type: string 
         description: APP_NAME
