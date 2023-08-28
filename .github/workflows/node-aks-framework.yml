@@ -60,6 +60,6 @@ jobs:
           node-version: ${{ inputs.NODE_VERSION }}
       - name: NPM Install
         run: npm install ${{ inputs.NPM_JSON_LOCATION }}
-      - name: NPM Build
-        if:  ${{ inputs.NPM_COMMAND }}
+#      - name: NPM Build
+#        if:  ${{ inputs.NPM_COMMAND }}
         run: ${{ inputs.NPM_COMMAND }}        
