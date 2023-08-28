@@ -5,7 +5,7 @@ on:
       NODE_VERSION:
         type: string 
         description: Node JS Version
-        required: true
+        required: false
         default: '14.16'
       NPM_JSON_LOCATION:
         type: string 
