@@ -1,6 +1,6 @@
 name: Node With AKS WorkFlow
 on: 
-  workflow_dispatch:
+  workflow_call:
     inputs:
       NODE_VERSION:
         type: string 
